@@ -27,13 +27,11 @@ enum EUIPathKey
 class MINIGAME_API UIManager
 {
 public:
-
 	static UIManager& GetInstance()
 	{
 		static UIManager instance;
 		return instance;
 	}
-
 
 private:
 	UIManager();
@@ -46,7 +44,6 @@ private:
 	TMap<int32, std::pair< TSubclassOf< UUserWidget >, UUserWidget* > > m_UI_Map;
 
 public:
-
 	// key 값을 통해 원하는 Widget 반환
 	UUserWidget* GetWidget( int32 uiIndex );
 

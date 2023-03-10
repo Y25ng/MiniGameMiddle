@@ -16,7 +16,7 @@
 
 
 ServerManager::ServerManager()
-    :m_buf(), m_previousPacketSize(0), m_Character(nullptr), m_Character2(nullptr), m_Character3(nullptr), m_bGameStart(false)
+    :m_buf(), m_previousPacketSize(0), m_Character(nullptr), m_Character2(nullptr), m_Character3(nullptr) // , m_bGameStart(false)
 {
 }
 
@@ -151,6 +151,13 @@ void ServerManager::SendPacket( char datainfo, void* packet )
         m_socket->Send( (uint8*)( packet ), sizeof( p ), bytesSents );
     }
     break;
+    case ClientToServer::SKILLUSE_REQUEST:
+    {
+        Packet::SkillUse_Request p = *( Packet::SkillUse_Request* ) ( packet );
+        int32 bytesSents = 0;
+        m_socket->Send( ( uint8* ) ( packet ), sizeof( p ), bytesSents );
+    }
+    break;
     default:
         break;
     }
@@ -223,7 +230,7 @@ void ServerManager::ProcessPacket( char* packet )
         }
 
         // 나를 제외한 플레이어의 캐릭터들의 움직임에 대한 정보 세팅
-        SetCharacterMoveInfo( p );
+        UserManager::GetInstance().SetCharacterMoveInfo( p );
     }
     case ServerToClient::TIME:
     {
@@ -273,6 +280,7 @@ void ServerManager::ProcessPacket( char* packet )
     break;
     case ServerToClient::COLLISION_WALL:
     {
+        /*
         Packet::CollisionWall p = *reinterpret_cast< Packet::CollisionWall* >( packet );
 
         for ( int i = 0; i < InitWorld::INGAMEPLAYER_NUM; i++ )
@@ -280,6 +288,7 @@ void ServerManager::ProcessPacket( char* packet )
             int32 playerKey = p.owner;
             UserManager::GetInstance().GetPlayerMap()[ playerKey ]->ApplyWallForces( p.wallNum );
         }
+        */
     }
     break;
     case ServerToClient::ENDGAME:
@@ -294,6 +303,7 @@ void ServerManager::ProcessPacket( char* packet )
         int32 playerKey = p.owner;
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetbStrong( true );
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetMP( 0.0f );
+        Cast< UMainUI >( UIManager::GetInstance().GetWidget( EUIPathKey::MAIN ) )->UpdateMP();
     }
     break;
     case ServerToClient::SKILLUSE_REQUEST_FAILED:
@@ -330,6 +340,7 @@ void ServerManager::SetOtherCharacterStartInfo( Packet::InitPlayers& p, int play
     UserManager::GetInstance().SetPlayerDefaultInfo( p.owner, p.x, p.y, p.directionX, p.directionY, p.color );
 }
 
+/*
 // 나를 제외한 플레이어의 캐릭터들의 움직임에 대한 정보 세팅 함수
 void ServerManager::SetCharacterMoveInfo( Packet::Move& p )
 {
@@ -348,4 +359,4 @@ void ServerManager::SetCharacterMoveInfo( Packet::Move& p )
     // 서버로부터 캐릭터의 움직임 정보를 받을지 말지의 대한 여부를 나타내는 플래그 변수에 true 값 할당
     UserManager::GetInstance().GetPlayerMap()[ p.owner ]->SetbRecvLocation( true );
 }
-
+*/

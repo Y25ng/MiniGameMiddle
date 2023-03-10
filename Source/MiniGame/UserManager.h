@@ -5,6 +5,7 @@
 
 
 #include "CoreMinimal.h"
+#include "Protocol.h"
 
 
 class AMiniGameCharacter;
@@ -40,5 +41,6 @@ public:
 	void SetMainCharacterIndex( int32 key ) { m_MainCharacterKey = key; }
 	int32 GetMainCharacterIndex() { return m_MainCharacterKey; }
 	int32 GetCharacterColor( int32 key ); 
+	void SetCharacterMoveInfo( Packet::Move& p );
 };
 

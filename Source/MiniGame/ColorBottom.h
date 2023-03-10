@@ -57,5 +57,5 @@ protected:
 
 	// 현재 타일 색깔
 	UPROPERTY( EditAnywhere )
-		int32 m_BottomNumber;
+	int32 m_BottomNumber;
 };

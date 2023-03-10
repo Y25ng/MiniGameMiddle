@@ -40,7 +40,7 @@ private:
 	AMiniGameCharacter* m_Character2;
 	AMiniGameCharacter* m_Character3;
 	
-	bool m_bGameStart;
+	// bool m_bGameStart;
 
 public:
 	ServerManager( ServerManager const& ) = delete;
@@ -69,8 +69,10 @@ public:
 	void SetCharacter3(AMiniGameCharacter* varCharacter) { m_Character3 = varCharacter; }
 
 	void SetOtherCharacterStartInfo( Packet::InitPlayers& p, int playerMapSize );
-	void SetCharacterMoveInfo( Packet::Move& p );
+	// void SetCharacterMoveInfo( Packet::Move& p );
 	
+	/*
 	bool GetbGameStart() { return m_bGameStart; }
 	void SetbGameStart( bool var ) { m_bGameStart = var; }
+	*/
 };
