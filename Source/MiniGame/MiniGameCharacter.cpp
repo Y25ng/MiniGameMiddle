@@ -525,7 +525,12 @@ void AMiniGameCharacter::LookUpAtRate( float Rate )
 
 void AMiniGameCharacter::MoveForward( float Value )
 {
-	if ( (Controller != nullptr) && (Value != 0.0f) && (m_bPlayerCanControll == true) )
+	if ( m_bPlayerCanControll == false || TimeManager::GetInstance().GetbGameStart() == false )
+	{
+		return;
+	}
+
+	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -539,7 +544,12 @@ void AMiniGameCharacter::MoveForward( float Value )
 
 void AMiniGameCharacter::MoveRight( float Value )
 {
-	if ( (Controller != nullptr) && (Value != 0.0f) && (m_bPlayerCanControll == true) )
+	if ( m_bPlayerCanControll == false || TimeManager::GetInstance().GetbGameStart() == false )
+	{
+		return;
+	}
+
+	if ( (Controller != nullptr) && (Value != 0.0f) )
 	{
 		// find out which way is right
 		const FRotator Rotation = Controller->GetControlRotation();

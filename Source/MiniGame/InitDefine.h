@@ -18,6 +18,7 @@ namespace InitPlayer
 
 	constexpr unsigned char SKILLENABLE = 100;  /*스킬 사용에 필요한 mp*/
 	constexpr unsigned char MPCOUNT = 1;		/*한번 블록 충돌 시 상승할 mp*/
+	constexpr unsigned char SKILLDURATION = 3;  /*스킬 지속시간*/
 }
 
 namespace InitWorld
@@ -83,6 +84,7 @@ namespace ServerToClient
 	constexpr unsigned char SKILLUSE_REQUEST_SUCCESS = 11;
 	constexpr unsigned char SKILLUSE_REQUEST_FAILED = 12;
 	constexpr unsigned char MP_UPDATE = 13;
+	constexpr unsigned char SKILLEND = 14;
 }
 
 #endif // !INITDEFINE

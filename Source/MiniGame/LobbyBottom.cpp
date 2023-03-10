@@ -42,6 +42,7 @@ void ALobbyBottom::BeginPlay()
 	Super::BeginPlay();	
 }
 
+/*
 // Called every frame
 void ALobbyBottom::Tick(float DeltaTime)
 {
@@ -53,3 +54,4 @@ void ALobbyBottom::Tick(float DeltaTime)
 		Destroy();
 	}
 }
+*/

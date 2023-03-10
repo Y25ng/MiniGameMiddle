@@ -42,6 +42,7 @@ private:
 	bool m_bPlayerCanControll;
 	bool m_bStrong;
 	float m_CollisionCollTime;
+	float m_StrongTime;
 
 public:
 	AMiniGameCharacter();
@@ -64,6 +65,7 @@ public:
 	void SetIsRun( bool var ) { m_bIsRun = var; }
 	void SetPlayerCanControll() { m_bPlayerCanControll = true; }
 	void SetbStrong( bool value ) { m_bStrong = value; }
+	bool GetbStrong() { return m_bStrong; }
 	void SetMP( float value ) { m_MP = value; }
 	float GetMP() { return m_MP; }
 

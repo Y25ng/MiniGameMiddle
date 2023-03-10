@@ -267,13 +267,46 @@ void ServerManager::ProcessPacket( char* packet )
     {
         Packet::CollisionPlayer p = *reinterpret_cast< Packet::CollisionPlayer* >( packet );
 
+        TMap<int32, bool> strongPlayerMap;
+        bool bHasStrongPlayer = false;
+
+
+        for ( int i = 0; i < InitWorld::INGAMEPLAYER_NUM; i++ )
+        {
+            if ( p.owners[ i ] == -1 || UserManager::GetInstance().GetPlayerMap().Find( p.owners[ i ] ) == nullptr )
+            {
+                continue;
+            }
+
+            if ( UserManager::GetInstance().GetPlayerMap()[ p.owners[ i ] ]->GetbStrong() == true )
+            {
+                strongPlayerMap.Add( p.owners[ i ], false );
+            }
+            else
+            {
+                strongPlayerMap.Add( p.owners[ i ], true );
+                bHasStrongPlayer = true;
+            }
+        }
+
         for ( int i = 0; i < InitWorld::INGAMEPLAYER_NUM;  i++ )
         {
             if ( p.owners[ i ] == -1 )
                 continue;
 
             int32 playerKey = p.owners[ i ];
-            UserManager::GetInstance().GetPlayerMap()[ playerKey ]->ApplyPlayerForces( p.owners );
+
+            if ( bHasStrongPlayer == false )
+            {              
+                UserManager::GetInstance().GetPlayerMap()[ playerKey ]->ApplyPlayerForces( p.owners );
+            }
+            else
+            {
+                if ( strongPlayerMap[ playerKey ] == true )
+                {
+                    UserManager::GetInstance().GetPlayerMap()[ playerKey ]->ApplyPlayerForces( p.owners );
+                }
+            }
         }
 
     }
@@ -318,6 +351,13 @@ void ServerManager::ProcessPacket( char* packet )
         int32 playerKey = p.owner;
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetMP( p.mp );
         Cast< UMainUI >( UIManager::GetInstance().GetWidget( EUIPathKey::MAIN ) )->UpdateMP();
+    }
+    break;
+    case ServerToClient::SKILLEND:
+    {
+        Packet::SkillEnd p = *reinterpret_cast< Packet::SkillEnd* >( packet );
+        int32 playerKey = p.owner;
+        UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetbStrong( false );
     }
     break;
     default:
