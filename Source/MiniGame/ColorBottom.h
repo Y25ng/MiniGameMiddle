@@ -39,19 +39,6 @@ private:
 	UPROPERTY( VisibleAnywhere )
 	TMap< int32, UMaterial* > m_Material_Map;
 
-	/*
-	// 타일이 올라가있는 상태인지 아닌지 여부를 할당받는 변수
-	UPROPERTY(VisibleAnywhere)
-		bool m_bElevate;
-
-	FVector m_OriginLocation;
-	FVector m_ElevateLocation;
-
-	float m_BottomDeltaTime;
-
-	FTimerHandle BottomTimerHandle;
-	*/
-
 public:	
 	// Sets default values for this actor's properties
 	AColorBottom();
@@ -59,18 +46,10 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaTime ) override;
 
-	// 충돌체에 오버랩 발생시 호출
-	virtual void NotifyActorBeginOverlap( AActor* OtherActor )override; 
-
 	// 타일 색깔을 변경해줄 함수
 	void ChangeColor( int32 colorNum );
 
 	int32 GetBottomNumber() { return m_BottomNumber; }
-
-	// 충돌체에 오버랩이 끝날시 호출
-	// virtual void NotifyActorEndOverlap(AActor* OtherActor)override;
-	// void OnElevate();
-	// void OffElevate();
 
 protected:
 	// Called when the game starts or when spawned

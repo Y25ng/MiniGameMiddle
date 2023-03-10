@@ -157,31 +157,6 @@ namespace Packet
 		Score( const int owner, unsigned char score ) :info( sizeof( Score ), ServerToClient::PLAYERSCORE ), owner( owner ), score( score ) {}
 	};
 
-	// 아이템 스폰 패킷
-	// 해당 좌표에 해당 타입의 아이템 클라이언트에 생성
-
-	struct ItemSpawn
-	{
-		PacketInfo info;
-		int itemIndex;			/*맵에 생성된 아이템 구분용 번호 */
-		unsigned char itemType;	/*아이템 종류*/
-		float x;
-		float y;
-		ItemSpawn( float x, float y, unsigned char itemtype, int itemIndex ) :info( sizeof( ItemSpawn ), ServerToClient::ITEMSPAWN ), x( x ), y( y ), itemType( itemtype ), itemIndex( itemIndex ) {}
-	};
-
-	// 아이템 충돌 후 아이템 사용 정보 전송 패킷
-	// owner 플레이어에게 아이템 효과 발동
-	// 해당 인덱스아이템 맵에서 삭제
-	struct ItemUse
-	{
-		PacketInfo info;
-		int itemIndex;			/*맵에 생성된 아이템 구분용 번호*/
-		unsigned char itemType;	/*아이템 종류*/
-		int owner;				/*아이템 사용자*/
-		ItemUse( int owner, unsigned char itemtype, int itemIndex ) :info( sizeof( ItemUse ), ServerToClient::ITEM_USE ), itemType( itemtype ), itemIndex( itemIndex ), owner( owner ) {}
-	};
-
 	//플레이어 인덱스 
 	//플레이어 최종 점수
 	struct FinishPlayerInfo
@@ -196,6 +171,29 @@ namespace Packet
 		PacketInfo info;
 		FinishPlayerInfo playerInfo[ 3 ];
 		EndGame() : info( sizeof( EndGame ), ServerToClient::ENDGAME ), playerInfo() {};
+	};
+
+	//클라 스킬 사용 요청 용 패킷
+	struct SkillUse_Request
+	{
+		PacketInfo info;
+		SkillUse_Request() : info( sizeof( SkillUse_Request ), ClientToServer::SKILLUSE_REQUEST ) {}
+	};
+
+	struct SkillUse_Result
+	{
+		PacketInfo info;
+		int owner;
+		SkillUse_Result( const int owner, const unsigned char type ) : info( sizeof( SkillUse_Result ), type ), owner( owner ) {}
+	};
+
+	struct PlayerMp_Update
+	{
+		PacketInfo info;
+		int owner;
+		unsigned char mp;
+		PlayerMp_Update( const int owner, unsigned char mp ) :info( sizeof( PlayerMp_Update ), ServerToClient::MP_UPDATE ), owner( owner ), mp( mp ) {}
+
 	};
 }
 #pragma pack(pop)

@@ -9,9 +9,8 @@
 #include "MainUI.generated.h"
 
 
-// class AActor;
 class UImage;
-// class UMaterial;
+class UTextBlock;
 
 
 UCLASS()
@@ -24,6 +23,9 @@ private:
 	UPROPERTY( meta = ( BindWidget ) )
 		UImage* miniMap_Image = nullptr;
 
+	UPROPERTY( meta = ( BindWidget ) )
+		UTextBlock* MP;
+
 public:
 	UMainUI( const FObjectInitializer& ObjectInitializer );
 	void NativeConstruct() override;
@@ -31,6 +33,7 @@ public:
 	// 메인 UI를 생성하고 화면에 출력하는 함수
 	void CreateUI();
 
-	// 미니맵 이미지를 갱신해줄 함수
-	// void UpdateMiniMap( AActor* cameraActor );
+	UTextBlock* GetMPTextBlock() { return MP; }
+
+	void UpdateMP();
 };

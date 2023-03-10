@@ -7,6 +7,7 @@
 #include "UIManager.h"
 #include "ActorManager.h"
 #include "ServerManager.h"
+#include "TimeManager.h"
 
 
 // Sets default values
@@ -46,9 +47,8 @@ void ALobbyBottom::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if ( UIManager::GetInstance().GetGameTimeSec() == 3 )
+	if ( TimeManager::GetInstance().GetGameTimeSec() == 3 )
 	{
-		ServerManager::GetInstance().SetbGameStart( true );
 		ActorManager::GetInstance().SetLobbyBottom( nullptr );
 		Destroy();
 	}

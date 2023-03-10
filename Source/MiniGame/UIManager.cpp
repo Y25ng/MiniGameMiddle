@@ -21,8 +21,6 @@ UIManager::UIManager()
 
 		m_UI_Map.Add( i, { UIClass, UIWidget } );
 	}
-
-	m_GameTimeSec = 0;
 }
 
 UIManager::~UIManager()

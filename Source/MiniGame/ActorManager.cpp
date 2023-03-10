@@ -3,6 +3,7 @@
 
 #include "ActorManager.h"
 #include "ColorBottom.h"
+#include "LobbyBottom.h"
 
 
 ActorManager::ActorManager() 
@@ -34,4 +35,13 @@ void ActorManager::PushBottom( int32 key, AColorBottom* bottom )
 	{
 		m_BottomMap.Add( key, bottom );
 	}
+}
+
+void ActorManager::DeleteLobbyBottom()
+{
+	if ( m_LobbyBottom == nullptr )
+		return;
+
+	m_LobbyBottom->Destroy();
+	m_LobbyBottom = nullptr;
 }

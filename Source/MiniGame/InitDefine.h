@@ -15,6 +15,9 @@ namespace InitPlayer
 	constexpr float INITPOSITION_Y[ 3 ] = { 1486.f, 2206.f, 2206.f };
 	constexpr float INITDIRECTION_X[ 3 ] = { 0.f, -0.866f, 0.866f };
 	constexpr float INITDIRECTION_Y[ 3 ] = { -1.f, 0.5f, 0.5f };
+
+	constexpr unsigned char SKILLENABLE = 100;  /*스킬 사용에 필요한 mp*/
+	constexpr unsigned char MPCOUNT = 1;		/*한번 블록 충돌 시 상승할 mp*/
 }
 
 namespace InitWorld
@@ -38,11 +41,8 @@ namespace InitWorld
 	//첫 시작 블록, 색칠되어있을 인덱스
 	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,30,32 };
 
-	// 아이템 젠 시간
-	constexpr unsigned char ITEMSPAWNTIME = 20;
-
 	// 게임 종료 시간
-	constexpr unsigned char ENDGAMETIME = 90;
+	constexpr unsigned char ENDGAMETIME = 60;
 
 	// 벽 정보
 	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;
@@ -56,18 +56,6 @@ namespace InitWorld
 	constexpr unsigned char BACKWARD_WALL = 3;
 	constexpr unsigned char NOTWALLCOLLISION = 4;
 
-	// 아이템 크기
-	constexpr float ITEM_SIZE = 30.f;		/*아이템 충돌체 지름*/
-}
-
-namespace ItemTypes
-{
-	//아이템 종류
-	const unsigned char REVERSE_LEFTRIGHT = 0;			//좌우 조작키 반대로 변경
-	const unsigned char REVERSE_FORWARDBACKWARD = 1;	//앞뒤 조작키 반대로 변경
-	const unsigned char STOP_ALLCHARACTER = 2;			//모든 캐릭터 멈추게 하기
-	const unsigned char ITEMTYPES_SIZE = 3;				//아이템 갯수
-
 }
 
 // PACKET TYPE
@@ -76,6 +64,7 @@ namespace ClientToServer
 {
 	constexpr unsigned char LOGIN_REQUEST = 0;
 	constexpr unsigned char MOVE = 1;
+	constexpr unsigned char SKILLUSE_REQUEST = 2;
 }
 // SERVER
 namespace ServerToClient
@@ -89,11 +78,11 @@ namespace ServerToClient
 	constexpr unsigned char COLLISION_BLOCK = 6;
 	constexpr unsigned char COLLISION_PLAYER = 7;
 	constexpr unsigned char PLAYERSCORE = 8;
-	constexpr unsigned char ITEMSPAWN = 9;
-	constexpr unsigned char COLLISION_WALL = 10;
-	constexpr unsigned char ITEM_USE = 11;
-	constexpr unsigned char ENDGAME = 12;
-
+	constexpr unsigned char COLLISION_WALL = 9;
+	constexpr unsigned char ENDGAME = 10;
+	constexpr unsigned char SKILLUSE_REQUEST_SUCCESS = 11;
+	constexpr unsigned char SKILLUSE_REQUEST_FAILED = 12;
+	constexpr unsigned char MP_UPDATE = 13;
 }
 
-#endif // !INITDEFINE_H
+#endif // !INITDEFINE

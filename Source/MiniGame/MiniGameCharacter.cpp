@@ -55,11 +55,12 @@ AMiniGameCharacter::AMiniGameCharacter()
 	m_YLocation = GetActorLocation().Y;
 	m_PeriodSendToServer = 0.0f;
 	m_LerpTime = 0.0f;
-	m_GameTimeSec = 0;
 	m_Speed = 0.0f;
 	m_bIsRun = false;
 	m_bPlayerCanControll = true;
 	m_CollisionCollTime = 0.0f;
+	m_bStrong = false;
+	m_MP = 0.0f;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -398,6 +399,8 @@ void AMiniGameCharacter::SetupPlayerInputComponent( class UInputComponent* Playe
 	PlayerInputComponent->BindAction( "Jump", IE_Pressed, this, &ACharacter::Jump );
 	PlayerInputComponent->BindAction( "Jump", IE_Released, this, &ACharacter::StopJumping );
 
+	PlayerInputComponent->BindAction( "SkillStun", IE_Pressed, this, &AMiniGameCharacter::SkillStun );
+
 	PlayerInputComponent->BindAxis( "MoveForward", this, &AMiniGameCharacter::MoveForward );
 	PlayerInputComponent->BindAxis( "MoveRight", this, &AMiniGameCharacter::MoveRight );
 
@@ -478,6 +481,12 @@ void AMiniGameCharacter::NotifyHit( UPrimitiveComponent* MyComp, AActor* Other, 
 		GetCharacterMovement()->AddImpulse( BounceForce, true );
 	}
 	*/
+}
+
+void AMiniGameCharacter::SkillStun()
+{
+	Packet::SkillUse_Request objSkillUse_Request;
+	ServerManager::GetInstance().SendPacket( ClientToServer::SKILLUSE_REQUEST, &objSkillUse_Request );
 }
 
 void AMiniGameCharacter::OnResetVR()

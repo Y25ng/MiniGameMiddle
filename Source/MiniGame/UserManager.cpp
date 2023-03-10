@@ -35,16 +35,6 @@ void UserManager::SetPlayerDefaultInfo( int32 key, float x, float y, float direc
 	tempCharacter->SetActorRotation( tempDirection.Rotation() );
 }
 
-void UserManager::SetPlayerTime( unsigned char time )
-{
-	if ( PlayerMap.Find( m_MainCharacterKey ) == nullptr )
-		return;
-
-	AMiniGameCharacter* tempCharacter = PlayerMap[ m_MainCharacterKey];
-
-	tempCharacter->SetGameTimeSec( static_cast< int >( time ) );
-}
-
 int32 UserManager::GetCharacterColor( int32 key )
 {
 	if ( PlayerMap[ key ] == nullptr )

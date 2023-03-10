@@ -38,4 +38,6 @@ public:
 	AColorBottom* GetColorBottom() { return m_ColorBottom; }
 	void SetLobbyBottom( ALobbyBottom* var_LobbyBottom ) { m_LobbyBottom = var_LobbyBottom; }
 	ALobbyBottom* GetLobbyBottom() { return m_LobbyBottom; }
+
+	void DeleteLobbyBottom();
 };

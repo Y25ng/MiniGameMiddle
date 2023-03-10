@@ -83,9 +83,6 @@ void AColorBottom::BeginPlay()
 	}
 
 	ActorManager::GetInstance().PushBottom( m_BottomNumber, this );
-
-	// m_OriginLocation = GetActorLocation();
-	// m_ElevateLocation = m_OriginLocation + FVector( 0.0f, 0.0f, 200.0f );
 }
 
 // Called every frame
@@ -96,85 +93,8 @@ void AColorBottom::Tick( float DeltaTime )
 	// m_BottomDeltaTime += DeltaTime;
 }
 
-// 타일이 다른 객체와 충돌이 발생했을 때 자동으로 호출
-void AColorBottom::NotifyActorBeginOverlap( AActor* OtherActor )
-{
-	/*
-	AMiniGameCharacter* tempCharacter = Cast< AMiniGameCharacter >( OtherActor );
-
-	if ( tempCharacter == nullptr )
-		return;
-
-	int32 tempCharacterColor = tempCharacter->GetColor();
-
-	if ( tempCharacterColor == m_CurrentColor )
-		return;
-
-	// 타일 색깔 변경 및 현재 색깔 상태 할당
-	ChangeColor( tempCharacterColor );
-	m_CurrentColor = tempCharacterColor;
-
-	/*
-	if ( m_bElevate == false )
-	{
-		GetWorldTimerManager().SetTimer(BottomTimerHandle, this, &AColorBottom::OnElevate, 0.03f, true);
-	}
-	*/
-}
-
 // 현재 타일의 머터리얼을 바꿔주는 함수
 void AColorBottom::ChangeColor( int32 colorNum )
 {
 	m_StaticMesh->SetMaterial( 0, m_Material_Map[ colorNum ] );
 }
-
-/*
-// 충돌체에 오버랩이 끝날시 호출
-void AColorBottom::NotifyActorEndOverlap( AActor* OtherActor )
-{
-	if ( m_bElevate == true )
-	{
-		GetWorldTimerManager().SetTimer( BottomTimerHandle, this, &AColorBottom::OffElevate, 0.03f, true );
-	}
-}
-*/
-
-/*
-void AColorBottom::OnElevate()
-{
-	// if (this->GetActorLabel() == labelStr)
-
-	if ( m_bElevate == false )
-	{
-		m_bElevate = true;
-		m_BottomDeltaTime = 0.0f;
-	}
-
-	FVector targetLocation = GetActorLocation();
-	targetLocation = m_OriginLocation + FVector( 0, 0, FMath::Lerp( 0.0f, 200.0f, m_BottomDeltaTime ) );
-	SetActorLocation( targetLocation );
-	
-	if ( m_BottomDeltaTime > 1.0f  )
-	{
-		GetWorldTimerManager().ClearTimer( BottomTimerHandle );
-	}
-}
-
-void AColorBottom::OffElevate()
-{
-	if ( m_bElevate == true )
-	{
-		m_bElevate = false;
-		m_BottomDeltaTime = 0.0f;
-	}
-
-	FVector targetLocation = GetActorLocation();
-	targetLocation = m_ElevateLocation + FVector( 0, 0, FMath::Lerp( 0.0f, -200.0f, m_BottomDeltaTime ) );
-	SetActorLocation( targetLocation );
-
-	if ( m_BottomDeltaTime > 1.0f )
-	{
-		GetWorldTimerManager().ClearTimer( BottomTimerHandle );
-	}
-}
-*/

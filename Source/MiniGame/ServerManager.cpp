@@ -8,7 +8,9 @@
 #include "SocketSubsystem.h"
 #include "UserManager.h"
 #include "UIManager.h"
+#include "MainUI.h"
 #include "ActorManager.h"
+#include "TimeManager.h"
 #include "MiniGameCharacter.h"
 #include <algorithm>
 
@@ -226,10 +228,20 @@ void ServerManager::ProcessPacket( char* packet )
     case ServerToClient::TIME:
     {
         Packet::Timer p = *reinterpret_cast<Packet::Timer*> (packet);
+        int tempTime = static_cast< int >( p.time );
 
         // 현재 플레이어에 대한 정보 할당
-        UserManager::GetInstance().SetPlayerTime(p.time);
-        UIManager::GetInstance().SetGameTimeSec(p.time);
+        TimeManager::GetInstance().SetGameTimeSec( tempTime );
+
+        if ( tempTime == 3 )
+        {
+            ActorManager::GetInstance().DeleteLobbyBottom();
+        }
+
+        if ( tempTime == 6 )
+        {
+            m_bGameStart = true;
+        }
 
         break;
     }
@@ -269,7 +281,34 @@ void ServerManager::ProcessPacket( char* packet )
         }
     }
     break;
+    case ServerToClient::ENDGAME:
+    {
 
+    }
+    break;
+    case ServerToClient::SKILLUSE_REQUEST_SUCCESS:
+    {
+        Packet::SkillUse_Result p = *reinterpret_cast< Packet::SkillUse_Result* >( packet );
+
+        int32 playerKey = p.owner;
+        UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetbStrong( true );
+        UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetMP( 0.0f );
+    }
+    break;
+    case ServerToClient::SKILLUSE_REQUEST_FAILED:
+    {
+
+    }
+    break;
+    case ServerToClient::MP_UPDATE:
+    {
+        Packet::PlayerMp_Update p = *reinterpret_cast< Packet::PlayerMp_Update* >( packet );
+
+        int32 playerKey = p.owner;
+        UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetMP( p.mp );
+        Cast< UMainUI >( UIManager::GetInstance().GetWidget( EUIPathKey::MAIN ) )->UpdateMP();
+    }
+    break;
     default:
         break;
     }

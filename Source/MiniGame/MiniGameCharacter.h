@@ -32,14 +32,15 @@ private:
 	float m_XLocation;
 	float m_YLocation;
 	float m_Speed;
+	float m_MP;
 	int32 m_OwnerIndex;
-	int32 m_GameTimeSec;
 	FVector m_StartLocation;
 	FVector m_TargetLocation;
 	FVector m_TargetDirection;
 	FVector m_Velocity;
 	bool m_bIsRun;
 	bool m_bPlayerCanControll;
+	bool m_bStrong;
 	float m_CollisionCollTime;
 
 public:
@@ -59,10 +60,12 @@ public:
 	void SetStartLocation( FVector var ) { m_StartLocation = var; }
 	void SetTargetLocation( FVector var ) { m_TargetLocation = var; }
 	void SetTargetDirection( FVector var ) { m_TargetDirection = var; }
-	void SetGameTimeSec( int var ) { m_GameTimeSec = var; }
 	void SetSpeed( float var ) { m_Speed = var; }
 	void SetIsRun( bool var ) { m_bIsRun = var; }
 	void SetPlayerCanControll() { m_bPlayerCanControll = true; }
+	void SetbStrong( bool value ) { m_bStrong = value; }
+	void SetMP( float value ) { m_MP = value; }
+	float GetMP() { return m_MP; }
 
 	// 충돌체에 오버랩 발생시 호출
 	virtual void NotifyActorBeginOverlap( AActor* OtherActor )override;
@@ -89,6 +92,8 @@ protected:
 
 	virtual void BeginPlay() override;
 	virtual void Tick( float DeltaTime ) override;
+
+	void SkillStun();
 
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
