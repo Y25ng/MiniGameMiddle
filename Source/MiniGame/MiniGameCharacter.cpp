@@ -18,6 +18,7 @@
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "AIController.h"
 #include "Protocol.h"
+#include "TimeManager.h"
 
 
 AMiniGameCharacter::AMiniGameCharacter()
@@ -316,7 +317,7 @@ void AMiniGameCharacter::Tick(float DeltaTime)
 	float currentXLocation = GetActorLocation().X;
 	float currentYLocation = GetActorLocation().Y;
 	
-	if ( ServerManager::GetInstance().GetbGameStart() && m_PeriodSendToServer >= 0.05f 
+	if ( TimeManager::GetInstance().GetbGameStart() && m_PeriodSendToServer >= 0.05f 
 		&& ( static_cast< int >( currentXLocation * 100 ) != static_cast< int >( m_XLocation * 100 )
 		|| static_cast< int >( currentYLocation * 100 ) != static_cast< int >( m_YLocation * 100 ) ) )
 	{
@@ -326,7 +327,7 @@ void AMiniGameCharacter::Tick(float DeltaTime)
 		m_XLocation = currentXLocation;
 		m_YLocation = currentYLocation;
 
-		if ( UserManager::GetInstance().GetMainCharacterIndex() == m_OwnerIndex && ServerManager::GetInstance().GetbGameStart() == true )
+		if ( UserManager::GetInstance().GetMainCharacterIndex() == m_OwnerIndex )
 		{
 			Packet::Move objMove( m_OwnerIndex, ClientToServer::MOVE );
 

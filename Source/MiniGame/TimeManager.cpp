@@ -3,7 +3,7 @@
 
 #include "TimeManager.h"
 
-TimeManager::TimeManager() : m_GameTimeSec(0)
+TimeManager::TimeManager() : m_GameTimeSec( 0 ), m_bGameStart( false )
 {
 }
 

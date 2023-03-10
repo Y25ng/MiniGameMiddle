@@ -233,14 +233,15 @@ void ServerManager::ProcessPacket( char* packet )
         // 현재 플레이어에 대한 정보 할당
         TimeManager::GetInstance().SetGameTimeSec( tempTime );
 
-        if ( tempTime == 3 )
+        if ( tempTime == ETimeType::DELETELOBBYBOTTOM )
         {
             ActorManager::GetInstance().DeleteLobbyBottom();
         }
 
-        if ( tempTime == 6 )
+        if ( tempTime == ETimeType::GAMESTART )
         {
-            m_bGameStart = true;
+            TimeManager::GetInstance().SetbGameStart( true );
+            // m_bGameStart = true;
         }
 
         break;
