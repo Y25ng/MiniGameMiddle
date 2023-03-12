@@ -52,16 +52,27 @@ AMiniGameCharacter::AMiniGameCharacter()
 	FollowCamera->SetupAttachment( CameraBoom, USpringArmComponent::SocketName ); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	m_PeriodSendToServer = 0.0f;
+	m_CollisionCoolTime = 0.0f;
+	m_PlayerStunTime = 0.0f;
 	m_XLocation = GetActorLocation().X;
 	m_YLocation = GetActorLocation().Y;
-	m_PeriodSendToServer = 0.0f;
-	m_LerpTime = 0.0f;
 	m_Speed = 0.0f;
-	m_bIsRun = false;
-	m_bPlayerCanControll = true;
-	m_CollisionCollTime = 0.0f;
-	m_bStrong = false;
 	m_MP = 0.0f;
+	
+	m_OwnerIndex = 0;
+	
+	m_TargetLocation = FVector( 0.0f, 0.0f, 0.0f );
+	m_TargetDirection = FVector( 0.0f, 0.0f, 0.0f );
+	
+	// m_bIsRun = false;
+	m_bPlayerCanControll = true;
+	m_bPlayerStun = false;
+	m_bStrong = false;
+	m_bRecvLocation = false;
+
+	m_ForceCollisionPlayer = 1700.0f;
+	m_ForceCollisionWall = 1700.0f;
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -81,7 +92,6 @@ void AMiniGameCharacter::SetDefaultLocation( float x, float y )
 	m_YLocation = y;
 
 	float tempZ = GetActorLocation().Z;
-
 	FVector targetLocation = FVector( x, y, tempZ );
 
 	SetActorLocation( targetLocation );
@@ -92,199 +102,115 @@ void AMiniGameCharacter::ApplyPlayerForces( int owners[] )
 	int32 mainPlayerIndex = -1;
 	TArray< int32 > otherPlayerIndexArr;
 
+	// 서버로부터 받은 충돌한 플레이어 정보에서 현재 유저가 조종중인 캐릭터와 타 유저가 조종중인 캐릭터를 구분
 	for ( int i = 0; i < InitWorld::INGAMEPLAYER_NUM; ++i )
 	{
 		if ( owners[ i ] == -1 )
+		{
 			continue;
+		}
+
+		if ( owners[ i ] == UserManager::GetInstance().GetMainCharacterIndex() )
+		{
+			// 내가 조종중인 캐릭터가 다른 유저와 충돌했을 때
+			mainPlayerIndex = owners[ i ];
+		}
 		else
 		{
-			if ( owners[ i ] == UserManager::GetInstance().GetMainCharacterIndex() )
-			{
-				mainPlayerIndex = owners[ i ];
-			}
-			else
-			{
-				otherPlayerIndexArr.Add( owners[ i ] );
-			}
+			// 충돌한 캐릭터가 다른 유저 캐릭터일 때 
+			otherPlayerIndexArr.Add( owners[ i ] );
 		}
 	}
 
-	if ( otherPlayerIndexArr.Num() == 1 )
+	if ( ( mainPlayerIndex == -1 ) || UserManager::GetInstance().GetPlayerMap().Find( mainPlayerIndex ) == nullptr 
+									|| ( UserManager::GetInstance().GetPlayerMap()[ mainPlayerIndex ] != this
+										|| m_bPlayerStun == true ) )
 	{
-		if ( mainPlayerIndex == -1 )
-			return;
+		return;
+	}
 
-		if ( UserManager::GetInstance().GetPlayerMap()[ mainPlayerIndex ] != this )
-			return;
+	if ( otherPlayerIndexArr.Num() == ECollisionNum::ONEPLAYER )
+	{
+		///////* 내 캐릭터와 다른 한명의 유저 캐릭터가 충돌했을 때 *///////
 
-		AMiniGameCharacter* otherPlayerCharacter = UserManager::GetInstance().GetPlayerMap()[ otherPlayerIndexArr[0] ];
+		if ( UserManager::GetInstance().GetPlayerMap().Find( otherPlayerIndexArr[ 0 ] ) == nullptr )
+		{
+			return;
+		}
+
+		AMiniGameCharacter* otherPlayerCharacter = UserManager::GetInstance().GetPlayerMap()[ otherPlayerIndexArr[ 0 ] ];
 
 		if ( otherPlayerCharacter == nullptr )
+		{
 			return;
+		}
 
 		// 충돌한 위치에서 튕겨져 나가는 방향을 계산
-		FVector AwayFromOther = ( GetActorLocation() - otherPlayerCharacter->GetActorLocation() ).GetSafeNormal();
+		FVector awayFromOther = ( GetActorLocation() - otherPlayerCharacter->GetActorLocation() ).GetSafeNormal();
 
-		// 튕겨져 나가는 힘의 크기를 설정
-		float BounceForceMagnitude = 3000.f;
+		// 튕겨져 나가는 힘의 크기와 방향을 설정
+		FVector bounceForce = awayFromOther * m_ForceCollisionPlayer;
 
-		// 힘을 계산하여 AddImpulse 함수를 사용하여 튕겨져 나가도록 처리
-		FVector BounceForce = AwayFromOther * BounceForceMagnitude;
-		// GetCharacterMovement()->AddImpulse( BounceForce, true );
-		//  BounceForce = otherCharacter->GetVelocity();// 5000.f;
+		// 캐릭터에게 힘을 적용
+		LaunchCharacter( bounceForce, true, true );
 
-		LaunchCharacter( BounceForce, true, true );
-
+		// 플레이어가 캐릭터를 조종할 수 없는 상태로 만듬
 		m_bPlayerCanControll = false;
 	}
-	else if ( otherPlayerIndexArr.Num() == 2 )
+	else if ( otherPlayerIndexArr.Num() == ECollisionNum::TWOPLAYER ) 
 	{
-		if ( mainPlayerIndex == -1 )
-			return;
+		///////* 내 캐릭터와 두명의 유저 캐릭터와 동시에 충돌했을 때 *///////
 
-		if ( UserManager::GetInstance().GetPlayerMap()[ mainPlayerIndex ] != this )
+		if ( UserManager::GetInstance().GetPlayerMap().Find( otherPlayerIndexArr[ 0 ] ) == nullptr 
+			|| UserManager::GetInstance().GetPlayerMap().Find( otherPlayerIndexArr[ 1 ] ) == nullptr )
+		{
 			return;
+		}
 
 		AMiniGameCharacter* otherPlayerCharacter1 = UserManager::GetInstance().GetPlayerMap()[ otherPlayerIndexArr[ 0 ] ];
-
-		if ( otherPlayerCharacter1 == nullptr )
-			return;
-
 		AMiniGameCharacter* otherPlayerCharacter2 = UserManager::GetInstance().GetPlayerMap()[ otherPlayerIndexArr[ 1 ] ];
 
-		if ( otherPlayerCharacter2 == nullptr )
+		if ( otherPlayerCharacter1 == nullptr || otherPlayerCharacter2 == nullptr )
+		{
 			return;
+		}
 
+		// 세 캐릭터 위치의 중앙 좌표
 		FVector centerLocation;
+
 		centerLocation.X = ( GetActorLocation().X + otherPlayerCharacter1->GetActorLocation().X + otherPlayerCharacter2->GetActorLocation().X ) / 3.0f;
 		centerLocation.Y = ( GetActorLocation().Y + otherPlayerCharacter1->GetActorLocation().Y + otherPlayerCharacter2->GetActorLocation().Y ) / 3.0f;
 		centerLocation.Z = GetActorLocation().Z;
 
 		// 충돌한 위치에서 튕겨져 나가는 방향을 계산
-		FVector AwayFromOther = ( GetActorLocation() - centerLocation ).GetSafeNormal();
+		FVector awayFromOther = ( GetActorLocation() - centerLocation ).GetSafeNormal();
 
-		// 튕겨져 나가는 힘의 크기를 설정
-		float BounceForceMagnitude = 3000.f;
+		// 튕겨져 나가는 힘의 크기와 방향을 설정
+		FVector bounceForce = awayFromOther * m_ForceCollisionPlayer;
 
-		// 힘을 계산하여 AddImpulse 함수를 사용하여 튕겨져 나가도록 처리
-		FVector BounceForce = AwayFromOther * BounceForceMagnitude;
-		// GetCharacterMovement()->AddImpulse( BounceForce, true );
-		//  BounceForce = otherCharacter->GetVelocity();// 5000.f;
+		// 캐릭터에게 힘을 적용
+		LaunchCharacter( bounceForce, true, true );
 
-		LaunchCharacter( BounceForce, true, true );
-
+		// 플레이어가 캐릭터를 조종할 수 없는 상태로 만듬
 		m_bPlayerCanControll = false;
 	}
 }
 
-
-void AMiniGameCharacter::ApplyWallForces( const unsigned char wallIndex )
+void AMiniGameCharacter::ApplyWallForces( FVector& previousVelocity, FVector& hitNormal )
 {
-	/*
-	// FString DebugMessage = FString::Printf( TEXT( "%d" ), wallIndex );
-	// GEngine->AddOnScreenDebugMessage( -1, 5.0f, FColor::Yellow, DebugMessage );
-
-	if ( static_cast<int>(wallIndex) >= InitWorld::NOTWALLCOLLISION || static_cast< int >(wallIndex) < InitWorld::LEFT_WALL )
-	{
-		return;
-	}
-
-	if ( UserManager::GetInstance().GetPlayerMap()[ UserManager::GetInstance().GetMainCharacterIndex() ] != this )
-		return;
-
-	// 충돌한 위치에서 튕겨져 나가는 방향을 계산
-	FVector AwayFromOther = -1 * GetActorForwardVector();
-
-	if ( wallIndex == InitWorld::LEFT_WALL)
-	{
-		AwayFromOther *= FVector( 1, -1, 0 );
-	}
-	else if ( wallIndex == InitWorld::RIGHT_WALL )
-	{
-		AwayFromOther *= FVector( 1, -1, 0 );
-	}
-	else if ( wallIndex == InitWorld::FORWARD_WALL )
-	{
-		AwayFromOther *= FVector( -1, 1, 0 );
-	}
-	else if ( wallIndex == InitWorld::BACKWARD_WALL )
-	{
-		AwayFromOther *= FVector( -1, 1, 0 );
-	}
-
-	AwayFromOther.GetSafeNormal();
-
-	/*
-	// 충돌 지점의 법선 벡터
-	FVector nomalVectorWall;
-
-	// Character의 이전 속도 벡터
-	FVector previousVelocity = GetVelocity();
-
-	if ( wallIndex == InitWorld::LEFT_WALL )
-	{
-		nomalVectorWall = FVector( 1, 0, 0 );
-	}
-	else if ( wallIndex == ::RIGHT_WALL )
-	{
-		nomalVectorWall = FVector( -1, 0, 0 );
-	}
-	else if ( wallIndex == InitWorld::FORWARD_WALL )
-	{
-		nomalVectorWall = FVector( 0, 1, 0 );
-	}
-	else if ( wallIndex == InitWorld::BACKWARD_WALL )
-	{
-		nomalVectorWall = FVector( 0, -1, 0 );
-	}
-
 	// 이전 속도 벡터와 충돌 지점의 법선 벡터를 정규화
 	previousVelocity.Normalize();
+	hitNormal.Normalize();
 
 	// 이전 속도 벡터와 법선 벡터의 내적을 계산
-	float dotProduct = FVector::DotProduct( nomalVectorWall, previousVelocity );
-
+	float DotProduct = FVector::DotProduct( hitNormal, previousVelocity );
 	// 내적값을 사용하여 Character가 충돌 지점에서 멈춰있는 Actor의 어느 방향으로 튕겨져 나가야 하는지 계산
-	FVector reflectedVelocity = previousVelocity - 2.0f * dotProduct * nomalVectorWall;
+	FVector reflectedVelocity = previousVelocity - 2.0f * DotProduct * hitNormal;
 
-	*/
-	// 새로운 속도 벡터 설정
-	// float impulseStrength = 2000.0f;
-	// FVector BounceForce = AwayFromOther * impulseStrength;
+	LaunchCharacter( reflectedVelocity * m_ForceCollisionWall, true, true );
 
-	// LaunchCharacter( BounceForce, true, true );
-
-	// m_bPlayerCanControll = false;
-
-	/*
-	// 충돌 시간
-	float HitTime = Hit.Time;
-
-	// 충돌한 Actor의 속도 벡터
-	FVector OtherActorVelocity = Other->GetVelocity();
-
-	// Character의 이전 속도 벡터
-	FVector PreviousVelocity = GetVelocity();
-
-	// 충돌 지점의 법선 벡터
-	FVector tempHitNormal = Hit.ImpactNormal;
-
-	// 이전 속도 벡터와 충돌 지점의 법선 벡터를 정규화
-	PreviousVelocity.Normalize();
-	tempHitNormal.Normalize();
-
-	// 이전 속도 벡터와 법선 벡터의 내적을 계산
-	float DotProduct = FVector::DotProduct( tempHitNormal, PreviousVelocity );
-
-	// 내적값을 사용하여 Character가 충돌 지점에서 멈춰있는 Actor의 어느 방향으로 튕겨져 나가야 하는지 계산
-	FVector ReflectedVelocity = PreviousVelocity - 2.0f * DotProduct * tempHitNormal;
-
-	// 새로운 속도 벡터 설정
-	float ImpulseStrength = 10000.0f;
-	GetCharacterMovement()->AddImpulse( ReflectedVelocity * ImpulseStrength, true );
-	*/
+	m_bPlayerCanControll = false;
 }
-
 
 void AMiniGameCharacter::BeginPlay()
 {
@@ -298,14 +224,10 @@ void AMiniGameCharacter::BeginPlay()
 	{
 		ServerManager::GetInstance().SetCharacter2( this );
 	}
-	else if ( NickName.ToString() == TEXT( "third" ) ) // 플레이오아 대결할 캐릭터2
+	else if ( NickName.ToString() == TEXT( "third" ) ) // 플레이와 대결할 캐릭터2
 	{
 		ServerManager::GetInstance().SetCharacter3( this );
 	}
-
-	UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>( GetWorld() );
-	NavSys->RegisterNavigationInvoker( this );
-
 }
 
 void AMiniGameCharacter::Tick(float DeltaTime)
@@ -317,11 +239,11 @@ void AMiniGameCharacter::Tick(float DeltaTime)
 	float currentXLocation = GetActorLocation().X;
 	float currentYLocation = GetActorLocation().Y;
 	
-	if ( TimeManager::GetInstance().GetbGameStart() && m_PeriodSendToServer >= 0.05f 
+	if ( TimeManager::GetInstance().GetbGameStart() && m_PeriodSendToServer >= TimeManagerFloatTime::PeriodSendToServerEnd
 		&& ( static_cast< int >( currentXLocation * 100 ) != static_cast< int >( m_XLocation * 100 )
 		|| static_cast< int >( currentYLocation * 100 ) != static_cast< int >( m_YLocation * 100 ) ) )
 	{
-		m_Velocity = FVector( currentXLocation - m_XLocation, currentYLocation - m_YLocation, 0 );
+		// m_Velocity = FVector( currentXLocation - m_XLocation, currentYLocation - m_YLocation, 0 );
 
 		m_PeriodSendToServer = 0.0f;
 		m_XLocation = currentXLocation;
@@ -343,35 +265,44 @@ void AMiniGameCharacter::Tick(float DeltaTime)
 		}
 	}
 	
-
-	if ( m_bRecvLocation )
+	if ( m_bRecvLocation == true )
 	{
-		if ( m_Speed <= 10.0f )
-
+		if ( m_Speed <= UserManagerFloatInfo::MinSpeedToRecv )
 		{
 			m_bRecvLocation = false;
-			FString DebugMessage = FString::Printf( TEXT( "anyword" ));
-			GEngine->AddOnScreenDebugMessage( -1, 5.0f, FColor::Yellow, DebugMessage );
+			// FString DebugMessage = FString::Printf( TEXT( "anyword" ));
+			// GEngine->AddOnScreenDebugMessage( -1, 5.0f, FColor::Yellow, DebugMessage );
 		}
 
-		if ( m_bPlayerCanControll == true )
-		{
-			SmoothMoveToLocation( m_TargetLocation, DeltaTime );
-		}
+		// if ( m_bPlayerCanControll == true )
+		// {
+		SmoothMoveToLocation( m_TargetLocation, DeltaTime );
+		// }
 
 		FRotator targetRotation = m_TargetDirection.Rotation();
-		SetActorRotation( FMath::RInterpTo(GetActorRotation(), targetRotation, GetWorld()->GetDeltaSeconds(), 40.f ) );
-		//SetActorRotation( targetRotation )
+		SetActorRotation( FMath::RInterpTo( GetActorRotation(), targetRotation, GetWorld()->GetDeltaSeconds(), 40.f ) );
 	}
 
+	
 	if ( m_bPlayerCanControll == false )
 	{
-		m_CollisionCollTime += DeltaTime;
+		m_CollisionCoolTime += DeltaTime;
 
-		if ( m_CollisionCollTime >= 0.4f )
+		if ( m_CollisionCoolTime >= TimeManagerFloatTime::CollisionCoolTimeEnd )
 		{
 			m_bPlayerCanControll = true;
-			m_CollisionCollTime = 0.0f;
+			m_CollisionCoolTime = 0.0f;
+		}
+	}
+
+	if ( m_bPlayerStun == true )
+	{
+		m_PlayerStunTime += DeltaTime;
+
+		if ( m_PlayerStunTime >= TimeManagerFloatTime::PlayerStunTimeEnd )
+		{
+			m_bPlayerStun = false;
+			m_PlayerStunTime = 0.0f;
 		}
 	}
 }	
@@ -383,11 +314,13 @@ void AMiniGameCharacter::SmoothMoveToLocation( const FVector& TargetLocation, fl
 
 	SetActorLocation( NewLocation );
 	
+	/*
 	if ( m_bIsRun == false )
 	{
 		m_bIsRun = true;
 		PlayAnimMontage( m_RunAnim );
 	}
+	*/
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -400,7 +333,8 @@ void AMiniGameCharacter::SetupPlayerInputComponent( class UInputComponent* Playe
 	PlayerInputComponent->BindAction( "Jump", IE_Pressed, this, &ACharacter::Jump );
 	PlayerInputComponent->BindAction( "Jump", IE_Released, this, &ACharacter::StopJumping );
 
-	PlayerInputComponent->BindAction( "SkillStun", IE_Pressed, this, &AMiniGameCharacter::SkillStun );
+	// 스킬 키 바인딩 추카
+	PlayerInputComponent->BindAction( "SkillStun", IE_Released, this, &AMiniGameCharacter::SkillStun );
 
 	PlayerInputComponent->BindAxis( "MoveForward", this, &AMiniGameCharacter::MoveForward );
 	PlayerInputComponent->BindAxis( "MoveRight", this, &AMiniGameCharacter::MoveRight );
@@ -421,71 +355,35 @@ void AMiniGameCharacter::SetupPlayerInputComponent( class UInputComponent* Playe
 	PlayerInputComponent->BindAction( "ResetVR", IE_Pressed, this, &AMiniGameCharacter::OnResetVR );
 }
 
-void AMiniGameCharacter::NotifyActorBeginOverlap( AActor* OtherActor )
-{
-	AMiniGameCharacter* otherCharacter = nullptr;
-	otherCharacter = Cast< AMiniGameCharacter >( OtherActor );
-}
-
-void AMiniGameCharacter::NotifyHit( UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit )
+void AMiniGameCharacter::NotifyHit( UPrimitiveComponent* MyComp, AActor* Other, UPrimitiveComponent* OtherComp, 
+									bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit )
 {
 	Super::NotifyHit( MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit );
 
-	if ( Other->IsA( AWall::StaticClass() ) )
+	if ( !( Other->IsA( AWall::StaticClass() ) ) )
 	{
-		// 충돌 시간
-		float HitTime = Hit.Time;
-
-		// 충돌한 Actor의 속도 벡터
-		FVector OtherActorVelocity = Other->GetVelocity();
-
-		// Character의 이전 속도 벡터
-		FVector PreviousVelocity = GetVelocity();
-
-		// 충돌 지점의 법선 벡터
-		FVector tempHitNormal = Hit.ImpactNormal;
-
-		// 이전 속도 벡터와 충돌 지점의 법선 벡터를 정규화
-		PreviousVelocity.Normalize();
-		tempHitNormal.Normalize();
-
-		// 이전 속도 벡터와 법선 벡터의 내적을 계산
-		float DotProduct = FVector::DotProduct(tempHitNormal, PreviousVelocity);
-
-		// 내적값을 사용하여 Character가 충돌 지점에서 멈춰있는 Actor의 어느 방향으로 튕겨져 나가야 하는지 계산
-		FVector ReflectedVelocity = PreviousVelocity - 2.0f * DotProduct * tempHitNormal;
-
-		// 새로운 속도 벡터 설정
-		float ImpulseStrength = 2000.0f;
-
-		LaunchCharacter( ReflectedVelocity * ImpulseStrength, true, true );
-
-		m_bPlayerCanControll = false;
-
 		return;
 	}
 
-	/*
-	AMiniGameCharacter* otherCharacter = nullptr;
-	otherCharacter = Cast< AMiniGameCharacter >( Other );
+	// 충돌 시간
+	float hitTime = Hit.Time;
+	// 충돌한 Actor의 속도 벡터
+	FVector otherActorVelocity = Other->GetVelocity();
+	// Character의 이전 속도 벡터
+	FVector previousVelocity = GetVelocity();
+	// 충돌 지점의 법선 벡터
+	FVector tempHitNormal = Hit.ImpactNormal;
 
-	if (otherCharacter)
-	{
-		// 충돌한 위치에서 튕겨져 나가는 방향을 계산
-		FVector AwayFromOther = ( GetActorLocation() - otherCharacter->GetActorLocation() ).GetSafeNormal();
-
-		// 튕겨져 나가는 힘의 크기를 설정
-		float BounceForceMagnitude = 5000.f;
-
-		// 힘을 계산하여 AddImpulse 함수를 사용하여 튕겨져 나가도록 처리
-		FVector BounceForce = AwayFromOther * BounceForceMagnitude;
-		GetCharacterMovement()->AddImpulse( BounceForce, true );
-	}
-	*/
+	ApplyWallForces( previousVelocity, tempHitNormal );
 }
 
 void AMiniGameCharacter::SkillStun()
 {
+	if ( m_bPlayerCanControll == false || m_bPlayerStun == true )
+	{
+		return;
+	}
+
 	Packet::SkillUse_Request objSkillUse_Request;
 	ServerManager::GetInstance().SendPacket( ClientToServer::SKILLUSE_REQUEST, &objSkillUse_Request );
 }
@@ -525,7 +423,7 @@ void AMiniGameCharacter::LookUpAtRate( float Rate )
 
 void AMiniGameCharacter::MoveForward( float Value )
 {
-	if ( m_bPlayerCanControll == false || TimeManager::GetInstance().GetbGameStart() == false )
+	if ( m_bPlayerCanControll == false || TimeManager::GetInstance().GetbGameStart() == false || m_bPlayerStun == true )
 	{
 		return;
 	}
@@ -544,7 +442,7 @@ void AMiniGameCharacter::MoveForward( float Value )
 
 void AMiniGameCharacter::MoveRight( float Value )
 {
-	if ( m_bPlayerCanControll == false || TimeManager::GetInstance().GetbGameStart() == false )
+	if ( m_bPlayerCanControll == false || TimeManager::GetInstance().GetbGameStart() == false || m_bPlayerStun == true )
 	{
 		return;
 	}

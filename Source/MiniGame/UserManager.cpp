@@ -48,7 +48,7 @@ void UserManager::SetCharacterMoveInfo( Packet::Move& p )
 {
 	// 캐릭터의 시작 위치 정보와 목표 위치 정보 할당
 	FVector tempLocation = FVector( p.x, p.y, UserManager::GetInstance().GetPlayerMap()[ p.owner ]->GetActorLocation().Z );
-	UserManager::GetInstance().GetPlayerMap()[ p.owner ]->SetStartLocation( UserManager::GetInstance().GetPlayerMap()[ p.owner ]->GetActorLocation() );
+	// UserManager::GetInstance().GetPlayerMap()[ p.owner ]->SetStartLocation( UserManager::GetInstance().GetPlayerMap()[ p.owner ]->GetActorLocation() );
 	UserManager::GetInstance().GetPlayerMap()[ p.owner ]->SetTargetLocation( tempLocation );
 
 	// 캐릭터가 현재 향하고 있는 방향 정보 할당

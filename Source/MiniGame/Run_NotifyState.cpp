@@ -16,7 +16,7 @@ void URun_NotifyState::NotifyEnd( USkeletalMeshComponent* MeshComp, UAnimSequenc
 
 		if ( Player != nullptr )
 		{
-			Player->SetIsRun( false );
+			// Player->SetIsRun( false );
 		}
 	}
 }

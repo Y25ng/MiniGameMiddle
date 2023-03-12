@@ -13,6 +13,15 @@ enum ETimeType
 	GAMESTART = 6,
 };
 
+
+namespace TimeManagerFloatTime
+{
+	const float PeriodSendToServerEnd = 0.05f;
+	const float CollisionCoolTimeEnd = 0.4f;
+	const float PlayerStunTimeEnd = 1.5f;
+}
+
+
 class MINIGAME_API TimeManager
 {
 

@@ -10,6 +10,16 @@
 
 class AMiniGameCharacter;
 
+enum ECollisionNum
+{
+	ONEPLAYER = 1,
+	TWOPLAYER = 2,
+};
+
+namespace UserManagerFloatInfo
+{
+	const float MinSpeedToRecv = 10.0f;
+}
 
 class MINIGAME_API UserManager
 {

@@ -90,6 +90,13 @@ void ServerManager::RecvPacket()
         return;
     }
 
+
+    if ( bytesSents >= InitPacket::MAX_BUFFERSIZE )
+    {
+        FString DebugMessage = FString::Printf( TEXT( "Too many packet" ) );
+        GEngine->AddOnScreenDebugMessage( -1, 5.0f, FColor::Red, DebugMessage );
+    }
+
     // 이전에 받았던 패킷이 있을 경우 그 뒤에, 이전에 받았던 패킷이 없으면 m_previousPacketSize 는 0
     std::copy(buf2, buf2 + bytesSents, m_buf + m_previousPacketSize);
 
@@ -126,6 +133,7 @@ void ServerManager::RecvPacket()
         else
         {
             m_previousPacketSize += bytesSents;
+            return;
         }
     } while (bytesSents > 0);
 }
@@ -259,7 +267,7 @@ void ServerManager::ProcessPacket( char* packet )
         Packet::CollisionTile p = *reinterpret_cast<Packet::CollisionTile*>( packet );
         ActorManager::GetInstance().ChangeBottomColor( UserManager::GetInstance().GetCharacterColor( p.owner ), p.tileIndex );
         {
-            UE_LOG( LogTemp, Error, TEXT( "%d" ), p.tileIndex );
+            // UE_LOG( LogTemp, Error, TEXT( "%d" ), p.tileIndex );
         }  
     }
     break;
@@ -280,12 +288,28 @@ void ServerManager::ProcessPacket( char* packet )
 
             if ( UserManager::GetInstance().GetPlayerMap()[ p.owners[ i ] ]->GetbStrong() == true )
             {
-                strongPlayerMap.Add( p.owners[ i ], false );
+                strongPlayerMap.Add( p.owners[ i ], true );
+                bHasStrongPlayer = true;
             }
             else
             {
-                strongPlayerMap.Add( p.owners[ i ], true );
-                bHasStrongPlayer = true;
+               strongPlayerMap.Add( p.owners[ i ], false );
+            }
+        }
+
+        if ( bHasStrongPlayer == true )
+        {
+            for ( int i = 0; i < InitWorld::INGAMEPLAYER_NUM; i++ )
+            {
+                if ( strongPlayerMap.Find( p.owners[ i ] ) == nullptr )
+                {
+                    continue;
+                }
+
+                if ( strongPlayerMap[ p.owners[ i ] ] == false )
+                {
+                    UserManager::GetInstance().GetPlayerMap()[ p.owners[ i ] ]->SetPlayerStun( true );
+                }
             }
         }
 
@@ -305,10 +329,20 @@ void ServerManager::ProcessPacket( char* packet )
                 if ( strongPlayerMap[ playerKey ] == true )
                 {
                     UserManager::GetInstance().GetPlayerMap()[ playerKey ]->ApplyPlayerForces( p.owners );
-                }
+                }     
             }
         }
 
+        for ( int i = 0; i < InitWorld::INGAMEPLAYER_NUM; i++ )
+        {
+            if ( p.owners[ i ] == -1 )
+                continue;
+
+            int32 playerKey = p.owners[ i ];
+
+            if ( strongPlayerMap[ playerKey ] == true )
+                UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetbStrong( false );
+        }
     }
     break;
     case ServerToClient::COLLISION_WALL:
@@ -336,7 +370,11 @@ void ServerManager::ProcessPacket( char* packet )
         int32 playerKey = p.owner;
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetbStrong( true );
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetMP( 0.0f );
-        Cast< UMainUI >( UIManager::GetInstance().GetWidget( EUIPathKey::MAIN ) )->UpdateMP();
+
+        if ( playerKey == UserManager::GetInstance().GetMainCharacterIndex() )
+        {
+            Cast< UMainUI >( UIManager::GetInstance().GetWidget( EUIPathKey::MAIN ) )->UpdateMP();
+        }
     }
     break;
     case ServerToClient::SKILLUSE_REQUEST_FAILED:
