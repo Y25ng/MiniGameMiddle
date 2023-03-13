@@ -7,8 +7,8 @@
 #include "Protocol.h"
 
 
-// #define SERVERIP "192.168.194.162" // ฑ่ม๖ภบดิ พ๎วร IP
-#define SERVERIP "172.28.35.240" // ฑ่ม๖ภบดิ IP
+ #define SERVERIP "192.168.194.162" // ฑ่ม๖ภบดิ พ๎วร IP
+//#define SERVERIP "172.28.35.240" // ฑ่ม๖ภบดิ IP
 // #define SERVERIP "172.28.35.239" // 
 // #define SERVERIP "192.168.0.9"
 // #define SERVERIP "192.168.0.24" // ภำฝร IP

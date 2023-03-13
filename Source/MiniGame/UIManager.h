@@ -16,7 +16,7 @@ class UWorld;
 
 // pair< TSubclassOf< UUserWidget >를 Value로 하는 TMap 컨테이너의 Key로 사용
 // Widget BP의 경로 Fstring을 Value로 하는 TMap 컨테이너의 Key로 사용
-enum EUIPathKey
+enum EUIPathKey : int32
 {
 	LOGIN = 0,
 	MAIN = 1,
@@ -52,7 +52,7 @@ public:
 	template< typename T >
 	void CreateUI ( UWorld* world, int32 uiIndex )
 	{
-		if ( world == nullptr || m_UI_Map.Find( uiIndex ) == false )
+		if ( world == nullptr || m_UI_Map.Find( uiIndex ) == nullptr )
 			return;
 
 		m_UI_Map[ uiIndex ].first = ConstructorHelpersInternal::FindOrLoadClass( m_UIClassPath_Map[ uiIndex ], T::StaticClass() );

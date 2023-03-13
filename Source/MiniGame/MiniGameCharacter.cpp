@@ -385,7 +385,7 @@ void AMiniGameCharacter::SkillStun()
 		return;
 	}
 
-	Packet::SkillUse_Request objSkillUse_Request;
+	Packet::SkillUseRequest objSkillUse_Request;
 	ServerManager::GetInstance().SendPacket( ClientToServer::SKILLUSE_REQUEST, &objSkillUse_Request );
 }
 

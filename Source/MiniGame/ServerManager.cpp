@@ -1,7 +1,6 @@
 
 
 #include "ServerManager.h"
-#include "Windows/AllowWindowsPlatformTypes.h"
 #include "Networking/Public/Interfaces/IPv4/IPv4Address.h"
 #include "Networking.h"
 #include "Sockets.h"
@@ -110,7 +109,7 @@ void ServerManager::RecvPacket()
         // 받아올 패킷 데이터 크기보다 받은 데이터가 많을 경우 -> 패킷을 조립해서 ProcessPacket 수행
         if (packetSize <= bytesSents)
         {
-            char assemble[InitPacket::MAX_BUFFERSIZE] = { NULL, };
+            char assemble[InitPacket::MAX_BUFFERSIZE] = { '\0',};
             std::copy(m_buf, m_buf + packetSize, assemble);
             ProcessPacket(assemble);
 
@@ -128,7 +127,7 @@ void ServerManager::RecvPacket()
             else
             {
                 m_previousPacketSize = 0;
-                ZeroMemory(m_buf, sizeof(m_buf));
+                memset( m_buf, 0, sizeof( m_buf ) );
             }
         }
         // 패킷 데이터 크기가 받은 데이터보다 많음 -> 패킷을 더 받아야 함
@@ -163,7 +162,7 @@ void ServerManager::SendPacket( char datainfo, void* packet )
     break;
     case ClientToServer::SKILLUSE_REQUEST:
     {
-        Packet::SkillUse_Request p = *( Packet::SkillUse_Request* ) ( packet );
+        Packet::SkillUseRequest p = *( Packet::SkillUseRequest* ) ( packet );
         int32 bytesSents = 0;
         m_socket->Send( ( uint8* ) ( packet ), sizeof( p ), bytesSents );
     }
@@ -378,7 +377,7 @@ void ServerManager::ProcessPacket( char* packet )
     break;
     case ServerToClient::SKILLUSE_REQUEST_SUCCESS:
     {
-        Packet::SkillUse_Result p = *reinterpret_cast< Packet::SkillUse_Result* >( packet );
+        Packet::SkillUseResult p = *reinterpret_cast< Packet::SkillUseResult* >( packet );
 
         int32 playerKey = p.owner;
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetbStrong( true );
@@ -397,7 +396,7 @@ void ServerManager::ProcessPacket( char* packet )
     break;
     case ServerToClient::MP_UPDATE:
     {
-        Packet::PlayerMp_Update p = *reinterpret_cast< Packet::PlayerMp_Update* >( packet );
+        Packet::PlayerMpUpdate p = *reinterpret_cast< Packet::PlayerMpUpdate* >( packet );
 
         int32 playerKey = p.owner;
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetMP( p.mp );

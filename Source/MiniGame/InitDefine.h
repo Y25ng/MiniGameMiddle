@@ -40,10 +40,11 @@ namespace InitWorld
 	constexpr float FIRST_TILEPOSITION_Y = 766.f;
 
 	//첫 시작 블록, 색칠되어있을 인덱스
-	constexpr int FIRSTTILE_COLOR[ 3 ] = { 17,30,32 };
+	constexpr int FIRSTTILE_INDEX[ 3 ] = { 17,30,32 };
 
 	// 게임 종료 시간
-	constexpr unsigned char ENDGAMETIME = 60;
+	constexpr unsigned char ENDGAMETIME = 60; /* 실제 게임 시간 = 60초, 게임 시작 후 정지 시간 6초*/
+	constexpr unsigned char STARTGAMEDELAY = 6;
 
 	// 벽 정보
 	constexpr float MINIMUM_X = FIRST_TILEPOSITION_X - 25.f;
@@ -67,6 +68,8 @@ namespace ClientToServer
 	constexpr unsigned char MOVE = 1;
 	constexpr unsigned char SKILLUSE_REQUEST = 2;
 	constexpr unsigned char SIGNUP_REQUEST = 3;
+	constexpr unsigned char MATHCING_REQUEST = 4;
+	constexpr unsigned char QUIT_ROOM = 5;
 }
 // SERVER
 namespace ServerToClient
@@ -88,6 +91,7 @@ namespace ServerToClient
 	constexpr unsigned char SKILLEND = 14;
 	constexpr unsigned char SIGNUP_OK = 15;
 	constexpr unsigned char SIGNUP_FAILED = 16;
+
 }
 
 #endif // !INITDEFINE
