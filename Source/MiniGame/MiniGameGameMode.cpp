@@ -6,6 +6,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "UIManager.h"
 #include "MainUI.h"
+#include "LogInUI.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraComponent.h" // 카메라 헤더
 #include "CameraForMinimap.h"
@@ -79,7 +80,7 @@ void AMiniGameGameMode::Tick( float deltaTime )
 		bServerConnect = true;
 	}
 
-	if (bServerConnect)
+	if ( bServerConnect == true )
 	{
 		ServerManager::GetInstance().RecvPacket();
 	}
@@ -89,6 +90,9 @@ void AMiniGameGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UIManager::GetInstance().CreateUI< UMainUI >( GetWorld(), EUIPathKey::MAIN );
+	UIManager::GetInstance().CreateUI< ULogInUI >( GetWorld(), EUIPathKey::LOGIN );
+	UIManager::GetInstance().AddUI( EUIPathKey::LOGIN );
+
+	// UIManager::GetInstance().CreateUI< UMainUI >( GetWorld(), EUIPathKey::MAIN );
 }
 

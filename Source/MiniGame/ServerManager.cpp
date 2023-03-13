@@ -9,6 +9,8 @@
 #include "UserManager.h"
 #include "UIManager.h"
 #include "MainUI.h"
+#include "LogInUI.h"
+#include "SignupUI.h"
 #include "ActorManager.h"
 #include "TimeManager.h"
 #include "MiniGameCharacter.h"
@@ -166,6 +168,13 @@ void ServerManager::SendPacket( char datainfo, void* packet )
         m_socket->Send( ( uint8* ) ( packet ), sizeof( p ), bytesSents );
     }
     break;
+    case ClientToServer::SIGNUP_REQUEST:
+    {
+        Packet::SignUpRequest p = *(Packet::SignUpRequest*)( packet );
+        int32 bytesSents = 0;
+        m_socket->Send( (uint8*)( packet ), sizeof( p ), bytesSents );
+    }
+    break;
     default:
         break;
     }
@@ -186,20 +195,19 @@ void ServerManager::ProcessPacket( char* packet )
         if ( m_Character == nullptr )
             break;
 
-        UserManager::GetInstance().PushPlayer(p.owner, m_Character);
-        
+        UserManager::GetInstance().PushPlayer(p.owner, m_Character);     
     }
     break;
     case ServerToClient::LOGON_OK:
     {
         Packet::LoginResult p = *reinterpret_cast< Packet::LoginResult* > ( packet );
-        
+        UIManager::GetInstance().RemoveUI( EUIPathKey::LOGIN );
     }
     break;
     case ServerToClient::LOGON_FAILED:
     {
         Packet::LoginResult p = *reinterpret_cast< Packet::LoginResult* > ( packet );
-
+        Cast< ULogInUI >( UIManager::GetInstance().GetWidget( EUIPathKey::LOGIN ) )->SetLogInConditionOpacity( 1.0f );
     }
     case ServerToClient::INITPLAYERS:
     {
@@ -396,6 +404,22 @@ void ServerManager::ProcessPacket( char* packet )
         Packet::SkillEnd p = *reinterpret_cast< Packet::SkillEnd* >( packet );
         int32 playerKey = p.owner;
         UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetbStrong( false );
+    }
+    break;
+    case ServerToClient::SIGNUP_OK:
+    {
+        Packet::SignUpResult p = *reinterpret_cast<Packet::SignUpResult*>( packet );
+        int32 playerKey = p.owner;
+
+        UIManager::GetInstance().RemoveUI( EUIPathKey::SIGNUP );
+        // FString nickname = FString( ANSI_TO_TCHAR(  )        
+        // UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetNickName(  )
+    }
+    case ServerToClient::SIGNUP_FAILED:
+    {
+        Packet::SignUpResult p = *reinterpret_cast<Packet::SignUpResult*>( packet );
+        int32 playerKey = p.owner;
+        Cast< USignupUI >( UIManager::GetInstance().GetWidget( EUIPathKey::SIGNUP ) )->SetSignupConditionOpacity( 1.0f );
     }
     break;
     default:

@@ -6,7 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "LogInUI.generated.h"
+#include "SignupUI.generated.h"
 
 
 class UEditableTextBox;
@@ -14,49 +14,42 @@ class UButton;
 class UTextBlock;
 
 
-enum ECondition
-{
-	IDLENGTH = 6,
-	PWLENGTH = 10,
-};
-
-
 UCLASS()
-class MINIGAME_API ULogInUI : public UUserWidget
+class MINIGAME_API USignupUI : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 private:
 	UPROPERTY( meta = ( BindWidget ) )
-	UEditableTextBox* EditableBox_ID;
+		UEditableTextBox* EditableBox_ID;
 
 	UPROPERTY( meta = ( BindWidget ) )
-	UEditableTextBox* EditableBox_PW;
+		UEditableTextBox* EditableBox_PW;
 
 	UPROPERTY( meta = ( BindWidget ) )
-	UButton* Btn_LogIn;
+		UButton* Btn_SignUp;
 
 	UPROPERTY( meta = ( BindWidget ) )
-	UButton* Btn_SignUp;
+		UButton* Btn_Exit;
 
 	UPROPERTY( meta = ( BindWidget ) )
-	UTextBlock* Text_IDCondition;
+		UTextBlock* Text_IDCondition;
 
 	UPROPERTY( meta = ( BindWidget ) )
-	UTextBlock* Text_PWCondition;
+		UTextBlock* Text_PWCondition;
 
 	UPROPERTY( meta = ( BindWidget ) )
-	UTextBlock* Text_LogInCondition;
+		UTextBlock* Text_SignupCondition;
 
 public:
 	void NativeConstruct() override;
 
 	UFUNCTION()
-	void Btn_LogIn_Func();
-
-	UFUNCTION()
 	void Btn_SignUp_Func();
 
 	UFUNCTION()
-	void SetLogInConditionOpacity( float var );
+	void Btn_Exit_Func();	
+
+	UFUNCTION()
+	void SetSignupConditionOpacity( float var ); 
 };

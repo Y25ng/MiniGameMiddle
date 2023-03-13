@@ -33,6 +33,8 @@ private:
 	// 현재 조종중인 플레이어 key값
 	int32 m_MainCharacterKey;
 
+	UWorld* m_world;
+
 public:
 
 	static UserManager& GetInstance()
@@ -52,5 +54,7 @@ public:
 	int32 GetMainCharacterIndex() { return m_MainCharacterKey; }
 	int32 GetCharacterColor( int32 key ); 
 	void SetCharacterMoveInfo( Packet::Move& p );
+	void SetWorld( UWorld* world ) { m_world = world; }
+	UWorld* GetWorld() { return m_world; }
 };
 

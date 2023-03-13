@@ -87,6 +87,7 @@ public:
 	void SetbStrong( bool var ) { m_bStrong = var; }	
 	void SetMP( float var ) { m_MP = var; }
 	void SetPlayerStun( bool var ) { m_bPlayerStun = var; }
+	void SetNickName( FString var ) { m_NickName = FName( *var ); }
 	
 	// 다른 오브젝트와 충돌 시 자동 호출되는 함수 -> 벽과의 충돌 시 물리 연산에 사용
 	virtual void NotifyHit( class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, 
@@ -106,7 +107,10 @@ protected:
 	int32 m_Color;
 
 	UPROPERTY( EditAnywhere )
-	FName NickName;
+	FName m_NickName;
+
+	UPROPERTY( EditAnywhere )
+	FName m_CharacterType;
 
 	// 캐릭터끼리의 충돌 시 적용되는 힘의 크기
 	UPROPERTY( EditAnywhere, BlueprintReadWrite )

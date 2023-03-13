@@ -20,7 +20,8 @@ enum EUIPathKey
 {
 	LOGIN = 0,
 	MAIN = 1,
-	ENDPATH = 2,
+	SIGNUP = 2,
+	ENDPATH = 3,
 };
 
 
@@ -49,12 +50,9 @@ public:
 
 	// 타입 T와 key값을 통해 원하는 Widget 생성 후 출력
 	template< typename T >
-	void CreateUI( UWorld* world, int32 uiIndex )
+	void CreateUI ( UWorld* world, int32 uiIndex )
 	{
-		if ( world == nullptr )
-			return;
-
-		if ( m_UI_Map.Find( uiIndex ) == false )
+		if ( world == nullptr || m_UI_Map.Find( uiIndex ) == false )
 			return;
 
 		m_UI_Map[ uiIndex ].first = ConstructorHelpersInternal::FindOrLoadClass( m_UIClassPath_Map[ uiIndex ], T::StaticClass() );
@@ -66,7 +64,8 @@ public:
 
 		if ( Cast< T >( m_UI_Map[ uiIndex ].second ) == nullptr )
 			return;
-
-		( Cast< T >( m_UI_Map[ uiIndex ].second ) )->AddToViewport();
 	}
+
+	void AddUI( int32 uiIndex );
+	void RemoveUI( int32 uiIndex );
 };

@@ -216,15 +216,16 @@ void AMiniGameCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if ( NickName.ToString() == TEXT( "Default" ) ) // 플레이어가 조종할 캐릭터
+	if ( m_CharacterType.ToString() == TEXT( "Default" ) ) // 플레이어가 조종할 캐릭터
 	{
 		ServerManager::GetInstance().SetCharacter( this );
+		UserManager::GetInstance().SetWorld( GetWorld() );
 	}
-	else if ( NickName.ToString() == TEXT( "second" ) ) // 플레이어와 대결할 캐릭터1
+	else if ( m_CharacterType.ToString() == TEXT( "second" ) ) // 플레이어와 대결할 캐릭터1
 	{
 		ServerManager::GetInstance().SetCharacter2( this );
 	}
-	else if ( NickName.ToString() == TEXT( "third" ) ) // 플레이와 대결할 캐릭터2
+	else if ( m_CharacterType.ToString() == TEXT( "third" ) ) // 플레이와 대결할 캐릭터2
 	{
 		ServerManager::GetInstance().SetCharacter3( this );
 	}
