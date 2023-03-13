@@ -59,7 +59,7 @@ namespace Packet
 
 		// 승률도 추가될 수 잇음
 		LoginResult( const int owner, const int type/*Login Failed, Login Ok*/ )
-			: info( sizeof( LoginResult ), type ), owner( owner ), bestScore( 0 ) {}
+			: info( sizeof( LoginResult ), type ), owner( owner ), bestScore( -1 ) {}
 	};
 
 	// 회원가입 요청
@@ -70,7 +70,7 @@ namespace Packet
 		char name[ InitPlayer::MAX_NAME ];
 		char password[ InitPlayer::MAX_PASSWORD ];
 
-		SignUpRequest( const int owner ): info( sizeof( SignUpRequest ), ClientToServer::SIGNUP_REQUEST ), owner( owner ), name(), password() {}
+		SignUpRequest( const int owner ) : info( sizeof( SignUpRequest ), ClientToServer::SIGNUP_REQUEST ), owner( owner ), name(), password() {}
 	};
 
 	//회원가입 결과 전송
@@ -79,7 +79,7 @@ namespace Packet
 		PacketInfo info;
 		int owner;
 
-		SignUpResult( const int owner, const unsigned char type ): info( sizeof( SignUpResult ), type ), owner( owner ) { }
+		SignUpResult( const int owner, const unsigned char type ) : info( sizeof( SignUpResult ), type ), owner( owner ) { }
 	};
 
 	// 서버에서 미니게임 씬 전환 요청 및 초기화 정보 전송
@@ -88,18 +88,19 @@ namespace Packet
 	struct InitPlayers
 	{
 		PacketInfo info;
-		int owner;			/* 플레이어 구분, 로그인 구현 시 추후 닉네임으로 변경*/
-		short color;		/* 플레이어 고유 색상 0 - red, 1 - blue, 2 - yellow*/
-		float x;			/*x 좌표*/
-		float y;			/*y 좌표*/
-		float directionX;	/*X방향 각도*/
-		float directionY;	/*Y방향 각도*/
+		int owner;							/* 플레이어 구분 */
+		char name[ InitPlayer::MAX_NAME ];	/* 플레이어 이름 */
+		short color;						/* 플레이어 고유 색상 0 - red, 1 - blue, 2 - yellow*/
+		float x;							/*	x 좌표*/
+		float y;							/*	y 좌표*/
+		float directionX;					/*	X방향 각도*/
+		float directionY;					/*	Y방향 각도*/
 
 		// 초기 위치 추가될 예정
 
 		InitPlayers( const int owner )
 			: info( sizeof( InitPlayers ), ServerToClient::INITPLAYERS )
-			, owner( owner ), color(), x(), y(), directionX(), directionY() {}
+			, owner( owner ), color(), x(), y(), directionX(), directionY(), name() {}
 	};
 
 	// 클라이언트가 이동 패킷 서버에게 전송
@@ -142,7 +143,7 @@ namespace Packet
 		int strongers[ 3 ];	/*스킬 사용 유저 여부*/
 
 		CollisionPlayer()
-			:info( sizeof( CollisionPlayer ), ServerToClient::COLLISION_PLAYER ), owners{ -1,-1,-1 }, strongers{ -1,-1,-1 }  {}
+			:info( sizeof( CollisionPlayer ), ServerToClient::COLLISION_PLAYER ), owners{ -1,-1,-1 }, strongers{ -1,-1,-1 } {}
 	};
 
 	// 플레이어와 벽과 충돌
@@ -174,7 +175,7 @@ namespace Packet
 		PacketInfo info;
 		int owner;
 		unsigned char score;
-		Score( const int owner, unsigned char score ):info( sizeof( Score ), ServerToClient::PLAYERSCORE ), owner( owner ), score( score ) {}
+		Score( const int owner, unsigned char score ) :info( sizeof( Score ), ServerToClient::PLAYERSCORE ), owner( owner ), score( score ) {}
 	};
 
 	//플레이어 인덱스 
@@ -190,14 +191,14 @@ namespace Packet
 	{
 		PacketInfo info;
 		FinishPlayerInfo playerInfo[ 3 ];
-		EndGame(): info( sizeof( EndGame ), ServerToClient::ENDGAME ), playerInfo() {};
+		EndGame() : info( sizeof( EndGame ), ServerToClient::ENDGAME ), playerInfo() {};
 	};
 
 	//클라 스킬 사용 요청 용 패킷
 	struct SkillUse_Request
 	{
 		PacketInfo info;
-		SkillUse_Request(): info( sizeof( SkillUse_Request ), ClientToServer::SKILLUSE_REQUEST ) {}
+		SkillUse_Request() : info( sizeof( SkillUse_Request ), ClientToServer::SKILLUSE_REQUEST ) {}
 	};
 
 	//스킬 사용 요청 결과 전송용 패킷
@@ -205,7 +206,7 @@ namespace Packet
 	{
 		PacketInfo info;
 		int owner;
-		SkillUse_Result( const int owner, const unsigned char type ): info( sizeof( SkillUse_Result ), type ), owner( owner ) {}
+		SkillUse_Result( const int owner, const unsigned char type ) : info( sizeof( SkillUse_Result ), type ), owner( owner ) {}
 	};
 
 	// 스킬 mp 갱신용 패킷
@@ -214,7 +215,7 @@ namespace Packet
 		PacketInfo info;
 		int owner;
 		unsigned char mp;
-		PlayerMp_Update( const int owner, unsigned char mp ):info( sizeof( PlayerMp_Update ), ServerToClient::MP_UPDATE ), owner( owner ), mp( mp ) {}
+		PlayerMp_Update( const int owner, unsigned char mp ) :info( sizeof( PlayerMp_Update ), ServerToClient::MP_UPDATE ), owner( owner ), mp( mp ) {}
 
 	};
 
@@ -223,7 +224,7 @@ namespace Packet
 	{
 		PacketInfo info;
 		int owner;
-		SkillEnd( const int owner ): info( sizeof( SkillEnd ), ServerToClient::SKILLEND ), owner( owner ) {}
+		SkillEnd( const int owner ) : info( sizeof( SkillEnd ), ServerToClient::SKILLEND ), owner( owner ) {}
 	};
 }
 #pragma pack(pop)

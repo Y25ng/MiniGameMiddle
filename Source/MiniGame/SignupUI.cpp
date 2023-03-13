@@ -72,23 +72,13 @@ void USignupUI::Btn_SignUp_Func()
 		return;
 	}
 
-	char* userID = TCHAR_TO_ANSI( *tempUserID );
-	char* userPW = TCHAR_TO_ANSI( *tempUserPW );
-
 	Packet::SignUpRequest objSignUpRequest( UserManager::GetInstance().GetMainCharacterIndex() );
 
-	for ( int i = 0; i < tempUserID.Len(); i++ )
-	{
-		objSignUpRequest.name[ i ] = userID[ i ];
-	}
+	int32 idSize = strlen( TCHAR_TO_UTF8( *tempUserID ) ) + 1;
+	FCStringAnsi::Strncpy( objSignUpRequest.name, TCHAR_TO_UTF8( *tempUserID ), idSize );
 
-	for ( int i = 0; i < tempUserPW.Len(); i++ )
-	{
-		objSignUpRequest.password[ i ] = userPW[ i ];
-	}
-
-	objSignUpRequest.name[ tempUserID.Len() ] = 0;
-	objSignUpRequest.password[ tempUserPW.Len() ] = 0;
+	int32 pwSize = strlen( TCHAR_TO_UTF8( *tempUserPW ) ) + 1;
+	FCStringAnsi::Strncpy( objSignUpRequest.password, TCHAR_TO_UTF8( *tempUserPW ), pwSize );
 
 	ServerManager::GetInstance().SendPacket( ClientToServer::SIGNUP_REQUEST, &objSignUpRequest );
 }

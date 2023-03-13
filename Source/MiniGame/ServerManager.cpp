@@ -202,6 +202,11 @@ void ServerManager::ProcessPacket( char* packet )
     {
         Packet::LoginResult p = *reinterpret_cast< Packet::LoginResult* > ( packet );
         UIManager::GetInstance().RemoveUI( EUIPathKey::LOGIN );
+        UIManager::GetInstance().CreateUI< UMainUI >( UserManager::GetInstance().GetWorld(), EUIPathKey::MAIN );
+        UIManager::GetInstance().AddUI( EUIPathKey::MAIN );
+
+        // FString nickname = FString( ANSI_TO_TCHAR()
+        // UserManager::GetInstance().GetPlayerMap()[ playerKey ]->SetNickName(  )
     }
     break;
     case ServerToClient::LOGON_FAILED:

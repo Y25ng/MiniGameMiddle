@@ -37,5 +37,8 @@ void UMainUI::UpdateMP()
 
     float tempMP = UserManager::GetInstance().GetPlayerMap()[ UserManager::GetInstance().GetMainCharacterIndex() ]->GetMP();
 
+    if ( MP == nullptr )
+        return;
+
     MP->SetText( FText::FromString( FString::Printf( TEXT( "%f"), tempMP ) ) );
 }

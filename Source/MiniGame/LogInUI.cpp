@@ -74,23 +74,13 @@ void ULogInUI::Btn_LogIn_Func()
 		return;
 	}
 
-	char* userID = TCHAR_TO_ANSI( *tempUserID );
-	char* userPW = TCHAR_TO_ANSI( *tempUserPW );
-
 	Packet::LoginRequest objLoginRequest( UserManager::GetInstance().GetMainCharacterIndex() );
 
-	for ( int i = 0; i < tempUserID.Len(); i++ )
-	{
-		objLoginRequest.name[ i ] = userID[ i ];
-	}
+	int32 idSize = strlen( TCHAR_TO_UTF8( *tempUserID ) ) + 1;
+	FCStringAnsi::Strncpy( objLoginRequest.name, TCHAR_TO_UTF8( *tempUserID ), idSize );
 
-	for ( int i = 0; i < tempUserPW.Len(); i++ )
-	{
-		objLoginRequest.password[ i ] = userPW[ i ];
-	}
-
-	objLoginRequest.name[ tempUserID.Len() ] = 0;
-	objLoginRequest.password[ tempUserPW.Len() ] = 0;
+	int32 pwSize = strlen( TCHAR_TO_UTF8( *tempUserPW ) ) + 1;
+	FCStringAnsi::Strncpy( objLoginRequest.password, TCHAR_TO_UTF8( *tempUserPW ), pwSize );
 
 	ServerManager::GetInstance().SendPacket( ClientToServer::LOGIN_REQUEST, &objLoginRequest );
 }

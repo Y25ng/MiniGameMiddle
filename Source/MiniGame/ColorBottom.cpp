@@ -96,5 +96,11 @@ void AColorBottom::Tick( float DeltaTime )
 // 현재 타일의 머터리얼을 바꿔주는 함수
 void AColorBottom::ChangeColor( int32 colorNum )
 {
+	if ( m_Material_Map.Find( colorNum ) == nullptr )
+		return;
+
+	if ( m_StaticMesh == nullptr )
+		return;
+
 	m_StaticMesh->SetMaterial( 0, m_Material_Map[ colorNum ] );
 }
